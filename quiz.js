@@ -23,6 +23,15 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.option').forEach(button => {
                 button.addEventListener('click', selectOption);
             });
+
+            document.getElementById('next-question').addEventListener('click', () => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < randomRules.length) {
+                    showQuestion();
+                } else {
+                    showResults();
+                }
+            });
         }
 
         function selectOption(e) {
@@ -52,15 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             document.getElementById('restart').addEventListener('click', loadQuiz);
         }
-
-        document.getElementById('next-question').addEventListener('click', () => {
-            currentQuestionIndex++;
-            if (currentQuestionIndex < randomRules.length) {
-                showQuestion();
-            } else {
-                showResults();
-            }
-        });
 
         showQuestion();
     }
