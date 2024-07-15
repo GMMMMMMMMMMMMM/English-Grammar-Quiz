@@ -1,75 +1,55 @@
-import grammarRules from './grammarRules.js';
+document.addEventListener('DOMContentLoaded', () => {
+    const quizContainer = document.getElementById('quiz-container');
+    
+    function loadQuiz() {
+        const randomRules = grammarRules.sort(() => 0.5 - Math.random()).slice(0, 15);
+        let currentQuestionIndex = 0;
+        let score = 0;
 
-const quizContainer = document.getElementById('quiz-container');
-const resultContainer = document.getElementById('result-container');
-const scoreContainer = document.getElementById('score');
-const explanationsContainer = document.getElementById('explanations');
+        function showQuestion() {
+            const rule = randomRules[currentQuestionIndex];
+            quizContainer.innerHTML = `
+                <h2>${rule.rule}</h2>
+                <p>${rule.explanation}</p>
+                <p>${rule.example}</p>
+                ${rule.options.map((option, index) => `
+                    <button class="option" data-correct="${option.correct}">${option.text}</button>
+                `).join('')}
+            `;
+            document.querySelectorAll('.option').forEach(button => {
+                button.addEventListener('click', selectOption);
+            });
+        }
 
-let currentQuestionIndex = 0;
-let score = 0;
-let selectedRules = [];
+        function selectOption(e) {
+            const selectedButton = e.target;
+            const correct = selectedButton.dataset.correct === 'true';
+            if (correct) {
+                selectedButton.classList.add('correct');
+                score++;
+            } else {
+                selectedButton.classList.add('incorrect');
+            }
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < randomRules.length) {
+                    showQuestion();
+                } else {
+                    showResults();
+                }
+            }, 1000);
+        }
 
-function startQuiz() {
-    selectedRules = grammarRules.sort(() => 0.5 - Math.random()).slice(0, 15);
-    currentQuestionIndex = 0;
-    score = 0;
-    quizContainer.innerHTML = '';
-    showQuestion();
-}
+        function showResults() {
+            quizContainer.innerHTML = `
+                <h2>Your Score: ${score}/${randomRules.length}</h2>
+                <button id="restart">Restart Quiz</button>
+            `;
+            document.getElementById('restart').addEventListener('click', loadQuiz);
+        }
 
-function showQuestion() {
-    const rule = selectedRules[currentQuestionIndex];
-    const questionHtml = `
-        <div class="question">
-            <h2>${rule.rule}</h2>
-            <p>${rule.explanation}</p>
-            <p>${rule.example}</p>
-            ${rule.options.map((option, index) => `
-                <button onclick="checkAnswer(${index})">${option.text}</button>
-            `).join('')}
-        </div>
-    `;
-    quizContainer.innerHTML = questionHtml;
-}
-
-function checkAnswer(selectedIndex) {
-    const rule = selectedRules[currentQuestionIndex];
-    const isCorrect = rule.options[selectedIndex].correct;
-
-    if (isCorrect) {
-        score++;
-        document.querySelectorAll('button')[selectedIndex].classList.add('correct');
-    } else {
-        document.querySelectorAll('button')[selectedIndex].classList.add('incorrect');
+        showQuestion();
     }
 
-    setTimeout(() => {
-        currentQuestionIndex++;
-        if (currentQuestionIndex < selectedRules.length) {
-            showQuestion();
-        } else {
-            showResults();
-        }
-    }, 1000);
-}
-
-function showResults() {
-    quizContainer.style.display = 'none';
-    resultContainer.style.display = 'block';
-    scoreContainer.textContent = score;
-
-    const explanationsHtml = selectedRules.map(rule => `
-        <h3>${rule.rule}</h3>
-        <p>${rule.explanation}</p>
-        <p>Example: ${rule.example}</p>
-    `).join('');
-    explanationsContainer.innerHTML = explanationsHtml;
-}
-
-function restartQuiz() {
-    resultContainer.style.display = 'none';
-    quizContainer.style.display = 'block';
-    startQuiz();
-}
-
-startQuiz();
+    loadQuiz();
+});
